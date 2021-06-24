@@ -29,19 +29,19 @@ test("should be able to register methods", (t) => {
 test("should throw a error when the request times out", async (t) => {
   const rpc = new RedisRPC(options);
   rpc.register("timeout", timeout);
-  await t.throwsAsync(rpc.call({ method: "timeout", data: "timeout" }));
+  await t.throwsAsync(rpc.call("timeout", "timeout"));
 });
 
 test("should return a response with error status when the handler fails", async (t) => {
   const rpc = new RedisRPC(options);
   rpc.register("error", errored);
-  const response = await rpc.call({ method: "error", data: "error" });
+  const response = await rpc.call("error", "error");
   t.is(response.status, "error");
 });
 
 test("should be able to call methods locally", async (t) => {
   const rpc = new RedisRPC(options);
   rpc.register("sum", sum);
-  const result = await rpc.call({ method: "sum", data: [8, 2] });
+  const result = await rpc.call("sum", [8, 2]);
   t.is(result.data, 10);
 });
