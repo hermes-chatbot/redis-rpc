@@ -5,8 +5,6 @@ import {
   RequestMessage,
   ResponseMessage,
   RpcChannels,
-  RpcRequest,
-  RpcResponse,
 } from "./types";
 import Emittery from "emittery";
 
@@ -81,9 +79,9 @@ export class RedisRPC {
     }
   }
 
-  private waitResponse(id: string): Promise<RpcResponse> {
+  private waitResponse(id: string): Promise<ResponseMessage> {
     return Promise.race([
-      this.event.once(`response-${id}`) as Promise<RpcResponse>,
+      this.event.once(`response-${id}`) as Promise<ResponseMessage>,
       sleep(2000).then(() => {
         throw new Error("RPC request timed out");
       }),
