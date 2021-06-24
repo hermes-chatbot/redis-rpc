@@ -92,7 +92,7 @@ export class RedisRPC {
     this.handlers[method] = handler;
   }
 
-  public async call({ method, data }: RpcRequest): Promise<RpcResponse> {
+  public async call(method: string, data: any): Promise<ResponseMessage> {
     const requestId = nanoid();
     const request = {
       method,
