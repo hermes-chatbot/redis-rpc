@@ -5,6 +5,7 @@ import {
   RequestMessage,
   ResponseMessage,
   RpcChannels,
+  RpcRequestOptions,
 } from "./types";
 import Emittery from "emittery";
 
@@ -15,6 +16,11 @@ type Handler = (message: any) => any;
 export const sleep = (ms: number): Promise<void> =>
   new Promise((r) => setTimeout(r, ms));
 
+const defaultChannels: RpcChannels = {
+  request: "rpc:request",
+  response: "rpc:response",
+};
+
 export class RedisRPC {
   private id: string;
   private pub: IRedis;
@@ -23,11 +29,11 @@ export class RedisRPC {
   private event: Emittery<Events>;
   private handlers: Record<string, Handler>;
 
-  constructor({ id, channels, ...redisOptions }: RedisRpcOptions) {
-    this.id = id || nanoid();
-    this.pub = new Redis(redisOptions);
-    this.sub = new Redis(redisOptions);
-    this.channels = channels;
+  constructor(options?: RedisRpcOptions) {
+    this.id = options?.id || nanoid();
+    this.pub = new Redis(options);
+    this.sub = new Redis(options);
+    this.channels = options?.channels || defaultChannels;
     this.event = new Emittery();
     this.handlers = {};
 
@@ -79,10 +85,10 @@ export class RedisRPC {
     }
   }
 
-  private waitResponse(id: string): Promise<ResponseMessage> {
+  private waitResponse(id: string, timeout = 2000): Promise<ResponseMessage> {
     return Promise.race([
       this.event.once(`response-${id}`) as Promise<ResponseMessage>,
-      sleep(2000).then(() => {
+      sleep(timeout).then(() => {
         throw new Error("RPC request timed out");
       }),
     ]);
@@ -92,7 +98,11 @@ export class RedisRPC {
     this.handlers[method] = handler;
   }
 
-  public async call(method: string, data: any): Promise<ResponseMessage> {
+  public async call(
+    method: string,
+    data: any,
+    options?: RpcRequestOptions
+  ): Promise<ResponseMessage> {
     const requestId = nanoid();
     const request = {
       method,
@@ -101,7 +111,7 @@ export class RedisRPC {
       client: this.id,
     };
     await this.pub.publish(this.channels.request, JSON.stringify(request));
-    const response = await this.waitResponse(requestId);
+    const response = await this.waitResponse(requestId, options?.timeout);
     return response;
   }
 }

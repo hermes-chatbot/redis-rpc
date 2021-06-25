@@ -5,9 +5,12 @@ export interface RpcChannels {
   response: string;
 }
 
+export interface RpcRequestOptions {
+  timeout?: number;
+}
 export interface RedisRpcOptions extends RedisOptions {
   id?: string;
-  channels: RpcChannels;
+  channels?: RpcChannels;
 }
 export interface ResponseMessage {
   status: string;

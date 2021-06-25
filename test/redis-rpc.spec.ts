@@ -35,7 +35,8 @@ test("should throw a error when the request times out", async (t) => {
 test("should return a response with error status when the handler fails", async (t) => {
   const rpc = new RedisRPC(options);
   rpc.register("error", errored);
-  const response = await rpc.call("error", "error");
+  await sleep(50);
+  const response = await rpc.call("error", "error", { timeout: 15000 });
   t.is(response.status, "error");
 });
 
