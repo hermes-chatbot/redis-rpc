@@ -115,3 +115,11 @@ export class RedisRPC {
     return response;
   }
 }
+
+export {
+  RedisRpcOptions,
+  RequestMessage,
+  ResponseMessage,
+  RpcChannels,
+  RpcRequestOptions,
+} from "./types";
